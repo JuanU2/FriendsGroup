@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  username  String
+  letters   Letter[]
+  groups    Group[]
+  answers   Answer[]
+  createdInvites   GroupInvite[]    @relation("Creation")
+  invitations     GroupInvite[]     @relation("Invitation")
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+}
+
+model Letter {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  groupId   String
+  group     Group     @relation(fields: [groupId], references: [id])
+  payload   String
+  answers   Answer[]
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+}
+
+model Answer {
+  id        String      @id @default(uuid())
+  payload   String
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  letterId  String
+  letter    Letter      @relation(fields: [letterId], references: [id])
+  createdAt DateTime    @default(now())
+  @@unique([userId, letterId])
+}
+
+model GroupInvite {
+  id            String    @id @default(uuid())
+  groupId       String
+  group         Group     @relation(fields: [groupId], references: [id])
+  invitedId     String
+  invitedUser   User              @relation("Invitation", fields: [invitedId], references: [id])
+  createdBy     String
+  creatingUser  User      @relation("Creation", fields: [createdBy], references: [id])
+  createdAt     DateTime   @default(now())
+  deletedAt     DateTime?
+}
+
+model Group {
+  id        String    @id @default(uuid())
+  invites   GroupInvite[]
+  users     User[]
+  letters   Letter[]
+}
