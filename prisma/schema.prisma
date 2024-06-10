@@ -13,14 +13,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Session {
+    id          String          @id @default(uuid())
+    userId      String
+    user        User            @relation(fields: [userId], references: [id])
+    userAgent   String
+    ip          String 
+    createdAt   DateTime        @default(now())
+    expiresAt   DateTime
+}
+
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  password  String
-  username  String
-  letters   Letter[]
-  groups    Group[]
-  answers   Answer[]
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  username      String
+  profilePic    String?
+  userRole      String     @default("USER")
+  letters       Letter[]
+  groups        Group[]
+  answers       Answer[]
+  sessions      Session[]
   createdInvites   GroupInvite[]    @relation("Creation")
   invitations     GroupInvite[]     @relation("Invitation")
   createdAt DateTime  @default(now())
